@@ -1,0 +1,6 @@
+(base) aishwari.krishna@Aishwaris-MacBook-Air flask % curl "http://localhost:5002/repeat?input=foo"
+
+{
+  "body": "foo",
+  "status": 200
+}

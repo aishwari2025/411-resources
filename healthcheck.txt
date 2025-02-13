@@ -1,0 +1,7 @@
+(base) aishwari.krishna@Aishwaris-MacBook-Air flask % docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
+
+CONTAINER ID   NAMES             STATUS
+c51fe3937ea6   distracted_ride   Up 10 seconds (health: starting)
+
+CONTAINER ID   NAMES             STATUS
+c51fe3937ea6   distracted_ride   Up About a minute (unhealthy)
