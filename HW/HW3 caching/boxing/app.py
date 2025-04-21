@@ -1,15 +1,14 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify, make_response, Response, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-# from flask_cors import CORS
 
-from config import ProductionConfig
-
+from boxing.config import ProductionConfig
 from boxing.db import db
-from boxing.models.boxers_model import Boxers
-from boxing.models.ring_model import RingModel
-from boxing.models.user_model import Users
-from boxing.utils.logger import configure_logger
+from boxing.boxing.models.boxers_model import Boxers
+from boxing.boxing.models.ring_model import RingModel
+from boxing.boxing.models.user_model import Users
+from boxing.boxing.utils.logger import configure_logger
+
 
 
 load_dotenv()

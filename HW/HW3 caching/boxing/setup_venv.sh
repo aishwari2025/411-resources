@@ -2,7 +2,7 @@
 
 # Set the name of the virtual environment directory
 VENV_DIR="meal_max_venv"
-REQUIREMENTS_FILE="requirements.lock"
+REQUIREMENTS_FILE="requirements.txt"
 
 # Check if the virtual environment already exists
 if [ ! -d "$VENV_DIR" ]; then

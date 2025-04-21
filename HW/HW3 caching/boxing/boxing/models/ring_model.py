@@ -4,9 +4,9 @@ import os
 import time
 from typing import List
 
-from boxing.models.boxers_model import Boxers
-from boxing.utils.logger import configure_logger
-from boxing.utils.api_utils import get_random
+from boxing.boxing.models.boxers_model import Boxers
+from boxing.boxing.utils.logger import configure_logger
+from boxing.boxing.utils.api_utils import get_random
 
 
 logger = logging.getLogger(__name__)

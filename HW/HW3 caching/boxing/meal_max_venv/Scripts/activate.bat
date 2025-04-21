@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set "VIRTUAL_ENV=C:\Users\23005\411-resources\hw\HW3 caching\boxing\meal_max_venv"
+set "VIRTUAL_ENV=C:\Users\23005\411-resources\HW\HW3 caching\boxing\meal_max_venv"
 
 if not defined PROMPT set PROMPT=$P$G
 
