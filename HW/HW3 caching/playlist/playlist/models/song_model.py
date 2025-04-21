@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from playlist.db import db
 from playlist.utils.logger import configure_logger
 from playlist.utils.api_utils import get_random
+from typing import List, Dict
 
 
 logger = logging.getLogger(__name__)
@@ -197,7 +198,9 @@ class Songs(db.Model):
             raise
 
     @classmethod
-    def get_all_songs(cls, sort_by_play_count: bool = False) -> list[dict]:
+
+    def get_all_songs(cls, sort_by_play_count: bool = False) -> List[Dict]:
+
         """
         Retrieves all songs from the catalog as dictionaries.
 
