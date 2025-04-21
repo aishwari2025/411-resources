@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.exc import IntegrityError
 
 from boxing.db import db
-from boxing.utils.logger import configure_logger
+from boxing.boxing.utils.logger import configure_logger
 
 
 logger = logging.getLogger(__name__)
