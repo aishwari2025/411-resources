@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from playlist.db import db
 from playlist.utils.logger import configure_logger
+from typing import Tuple
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class Users(db.Model, UserMixin):
     password = db.Column(db.String(64), nullable=False)  # SHA-256 hash in hex
 
     @staticmethod
-    def _generate_hashed_password(password: str) -> tuple[str, str]:
+    def _generate_hashed_password(password: str) -> Tuple[str, str]:
         """
         Generates a salted, hashed password.
 
