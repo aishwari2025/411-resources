@@ -34,27 +34,8 @@ class RingModel:
         self.ring: List[int] = []
         self._boxer_cache: dict[int, Boxers] = {}
         self._ttl: dict[int, float] = {}
-        self.ttl_seconds = int(os.getenv("TTL_SECONDS", 60))
-
-    def _get_boxer_from_cache_or_db(self, boxer_id: int) -> Boxers:
-        """Get a boxer from cache or load from database if TTL expired"""
-        now = time.time()
-        if (
-            boxer_id in self._boxer_cache
-            and boxer_id in self._ttl
-            and self._ttl[boxer_id] > now
-        ):
-            logger.debug(f"Boxer {boxer_id} retrieved from cache")
-            return self._boxer_cache[boxer_id]
-
-        logger.info(f"Loading boxer {boxer_id} from database")
-        boxer = Boxers.get_boxer_by_id(boxer_id)
-        if boxer:
-            self._boxer_cache[boxer_id] = boxer
-            self._ttl[boxer_id] = now + self.ttl_seconds
-        return boxer
-
-    def fight(self) -> List[Boxers]:
+        self.ttl_seconds = int(os.getenv("TTL", 60))
+    def fight(self) -> str:
         """Simulates a fight between two combatants.
 
         Simulates a fight between two combatants. Computes their fighting skill levels,
@@ -71,12 +52,7 @@ class RingModel:
             logger.error("There must be two boxers to start a fight.")
             raise ValueError("There must be two boxers to start a fight.")
 
-        boxer1_id = self.ring.pop(0)
-        boxer2_id = self.ring.pop(0)
-
-        boxer_1 = self._get_boxer_from_cache_or_db(boxer1_id)
-        boxer_2 = self._get_boxer_from_cache_or_db(boxer2_id)
-
+        boxer_1, boxer_2 = self.get_boxers()
 
         logger.info(f"Fight started between {boxer_1.name} and {boxer_2.name}")
 
@@ -112,8 +88,7 @@ class RingModel:
 
         self.clear_ring()
 
-        return [winner, loser]
-
+        return winner.name
 
     def clear_ring(self):
         """Clears the list of boxers.
@@ -127,58 +102,43 @@ class RingModel:
 
 
     def enter_ring(self, boxer_id: int):
-        """Prepares a boxer by adding them to the ring for an upcoming fight.
-
-        Args:
-            boxer_id (int): The ID of the boxer to enter the ring.
-
-        Raises:
-            ValueError: If the ring already has two boxers (fight is full).
-            ValueError: If the boxer ID is invalid or the boxer does not exist.
-
-        """
         if len(self.ring) >= 2:
-            logger.error(f"Attempted to add boxer ID {boxer_id} but the ring is full")
-            raise ValueError("The ring already has two boxers.")
-
-        try:
-            boxer = Boxers.get_boxer_by_id(boxer_id)
-        except ValueError as e:
-            logger.error(str(e))
-            raise
-
-        if boxer_id not in self.ring:
-            self.ring.append(boxer_id)
-            logger.info(f"Added boxer '{boxer.name}' (ID {boxer_id}) to the ring")
-        else:
-            logger.warning(f"Boxer ID {boxer_id} is already in the ring")
-
+            raise ValueError("Ring is full")
+        boxer = Boxers.get_boxer_by_id(boxer_id)
+        logger.info(f"Adding boxer '{boxer.name}' (ID {boxer.id}) to the ring")
+        # Add to ring and update cache
+        self.ring.append(boxer.id)
+        self._boxer_cache[boxer.id] = boxer
+        self._ttl[boxer.id] = time.time() + self.ttl_seconds
         logger.info(f"Current boxers in the ring: {[Boxers.get_boxer_by_id(b).name for b in self.ring]}")
 
 
     def get_boxers(self) -> List[Boxers]:
-        """Retrieves the current list of boxers in the ring.
+        """Retrieves the current list of boxers in the ring with caching.
 
         Returns:
-            List[Boxers]: A list of Boxers dataclass instances representing the boxers in the ring.
-
+            List[Boxers]: A list of Boxers instances representing the boxers in the ring.
         """
-        now = time.time()
-        boxers = []
-
         if not self.ring:
             logger.warning("Retrieving boxers from an empty ring.")
+            return []
         else:
             logger.info(f"Retrieving {len(self.ring)} boxers from the ring.")
 
-        for boxer_id in self.ring:
-            if boxer_id not in self._ttl or self._ttl[boxer_id] <= now:
-                logger.info(f"TTL expired or missing for boxer {boxer_id}. Refreshing from DB.")
-            else:
-                logger.debug(f"Using cached boxer {boxer_id} (TTL valid).")
+        boxers = []
+        now = time.time()
 
-            boxer = self._get_boxer_from_cache_or_db(boxer_id)
-            if boxer:
+        for boxer_id in self.ring:
+            # Check if boxer is in cache and TTL is valid
+            if boxer_id in self._boxer_cache and self._ttl.get(boxer_id, 0) > now:
+                logger.debug(f"Using cached boxer {boxer_id} (TTL valid).")
+                boxers.append(self._boxer_cache[boxer_id])
+            else:
+                # Cache expired or boxer not in cache, fetch from DB
+                logger.info(f"TTL expired or missing for boxer {boxer_id}. Refreshing from DB.")
+                boxer = Boxers.get_boxer_by_id(boxer_id)
+                self._boxer_cache[boxer_id] = boxer
+                self._ttl[boxer_id] = now + self.ttl_seconds
                 boxers.append(boxer)
 
         logger.info(f"Retrieved {len(boxers)} boxers from the ring.")
@@ -209,7 +169,7 @@ class RingModel:
         return skill
 
     def clear_cache(self):
-        """Clears the local TTL cache of boxer objects.
-
-        """
+        """Clears the local TTL cache of boxer objects."""
         logger.info("Clearing local boxer cache in RingModel.")
+        self._boxer_cache.clear()
+        self._ttl.clear()
