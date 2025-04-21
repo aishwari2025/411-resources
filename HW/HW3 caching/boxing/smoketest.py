@@ -51,11 +51,16 @@ def run_smoketest():
         "username": username,
         "password": password
     })
+    
+    print("Login set-cookie:", login_resp.headers.get("Set-Cookie"))
+    print("Session cookies:", session.cookies.get_dict())
     assert login_resp.status_code == 200
     assert login_resp.json()["status"] == "success"
     print("Login successful")
 
     create_boxer_resp = session.post(f"{base_url}/add-boxer", json=test_muhammad_ali)
+    print("Status code:", create_boxer_resp.status_code)
+    print("Response text:", create_boxer_resp.text)
     assert create_boxer_resp.status_code == 201
     assert create_boxer_resp.json()["status"] == "success"
     print("Boxer creation successful")

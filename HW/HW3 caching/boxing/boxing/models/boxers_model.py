@@ -21,7 +21,7 @@ class Boxers(db.Model):
 
     """
 
-    __tablename__ = "Boxers"
+    __tablename__ = "boxers"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String, unique=True, nullable=False)
