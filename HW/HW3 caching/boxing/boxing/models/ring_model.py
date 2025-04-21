@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 configure_logger(logger)
 
 
-class RingManager:
+class RingModel:
     """A class to manage the the ring in which boxers have fights.
 
     """
