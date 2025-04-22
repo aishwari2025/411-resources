@@ -4,10 +4,10 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 
 from boxing.config import ProductionConfig
 from boxing.db import db
-from boxing.boxing.models.boxers_model import Boxers
-from boxing.boxing.models.ring_model import RingModel
-from boxing.boxing.models.user_model import Users
-from boxing.boxing.utils.logger import configure_logger
+from boxing.models.boxers_model import Boxers
+from boxing.models.ring_model import RingModel
+from boxing.models.user_model import Users
+from boxing.utils.logger import configure_logger
 
 
 
