@@ -1,0 +1,14 @@
+(base) aishwari.krishna@Aishwaris-MacBook-Air flask % curl http://localhost:5002/health
+
+{
+  "body": "OK",
+  "status": 200
+}
+
+(base) aishwari.krishna@Aishwaris-MacBook-Air flask % curl http://localhost:5002/healthcheck
+
+{
+  "body": "OK",
+  "status": 200
+}
+
