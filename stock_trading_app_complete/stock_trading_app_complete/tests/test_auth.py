@@ -1,6 +1,11 @@
-def test_create_account(client):
+import pytest
+
+
+def test_create_account(client, session):
     response = client.post("/create-account", json={"username": "test", "password": "123"})
+    print(response.get_json())  # ← Helps debug if you still get 400
     assert response.status_code == 200
+
 
 def test_login_logout(client):
     client.post("/create-account", json={"username": "test2", "password": "abc"})
@@ -10,7 +15,7 @@ def test_login_logout(client):
     assert res.status_code == 200
 
 
-def test_buy_and_get_holding(client, monkeypatch):
+def test_buy_and_get_holding(client,session, monkeypatch):
     # Stub the stock price fetch to always return 100.0
     monkeypatch.setattr('external_api.fetch_stock_price', lambda s: 100.0)
 
@@ -19,8 +24,12 @@ def test_buy_and_get_holding(client, monkeypatch):
     client.post('/login', json={'username': 'u3', 'password': 'pwd'})
 
     # Manually set session to simulate login
-    with client.session_transaction() as sess:
-        sess['user_id'] = 3  
+    from models.user_model import Users
+
+    user = session.query(Users).filter_by(username="u3").first()
+    self.holdings.setdefault(user, {})
+
+
 
     # Buy 2 shares of TSLA
     rv = client.post('/portfolio/buy', json={'symbol': 'TSLA', 'quantity': 2})

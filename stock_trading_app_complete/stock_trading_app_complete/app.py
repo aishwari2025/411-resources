@@ -5,6 +5,8 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 import os
 import logging
+import external_api
+
 
 # configure root logger
 logging.basicConfig(
@@ -17,7 +19,7 @@ load_dotenv()
 
 # Ensure fetch_stock_price and portfolio are imported or instantiated
 from external_api import fetch_stock_price
-from models.portfolio_model import portfolio
+from models.portfolio_model import portfolio_model as portfolio
 
 def validate_json(keys):
     data = request.get_json() or {}
@@ -66,7 +68,10 @@ def create_app():
         symbol = data['symbol'].upper()
         qty = int(data['quantity'])
         price = fetch_stock_price(symbol)
-        portfolio.buy(session.get('user_id'), symbol, qty, price)
+        from models.user_model import Users
+        user = Users.query.get(session['user_id'])
+        portfolio.buy(user.username, symbol, qty, price)
+
         logger.info(f"Bought {qty} of {symbol} at {price}")
         return jsonify({
             'message': 'Stock purchased',
