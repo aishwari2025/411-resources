@@ -3,6 +3,8 @@
 
 ## Overview
 This Flask-based web application allows users to create an account, log in, manage a virtual stock portfolio (buy/sell stocks), and check real-time stock prices via Alpha Vantage API.
+- Portfolio data is stored in an in-memory model, separate from the database
+- Stock price data is retrieved live via Alpha Vantage API
 
 ## Setup Instructions
 
@@ -34,6 +36,14 @@ This Flask-based web application allows users to create an account, log in, mana
    ```bash
    docker run -p 5000:5000 --env-file .env stockapp
    ```
+
+## Key API Routes (Summary)
+
+- `/create-account`, `/login`, `/logout`, `/update-password`
+- `/portfolio`, `/portfolio/buy`, `/portfolio/sell`, `/portfolio/value`, `/portfolio/clear`
+- `/portfolio/holding/<symbol>` (GET, DELETE)
+- `/stock/lookup`
+- `/healthcheck`
 
 ## API Endpoints
 
