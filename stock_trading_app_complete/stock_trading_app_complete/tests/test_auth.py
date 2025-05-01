@@ -34,7 +34,7 @@ def test_login_logout(client):
     assert res.status_code == 200
 
 
-def test_buy_and_get_holding(client,session, monkeypatch):
+def test_buy_and_get_holding(client, session, monkeypatch):
     """
     test buying a stock, retrieving the holding, and deleting it.
 
@@ -51,40 +51,31 @@ def test_buy_and_get_holding(client,session, monkeypatch):
         - deletion of holding (200).
         - subsequent GET returns 404.
     """
-    # Stub the stock price fetch to always return 100.0
     monkeypatch.setattr('external_api.fetch_stock_price', lambda s: 100.0)
 
-    # Register and log in a new user
     client.post('/create-account', json={'username': 'u3', 'password': 'pwd'})
     client.post('/login', json={'username': 'u3', 'password': 'pwd'})
 
-    # Manually set session to simulate login
-    from models.user_model import Users
+    user = session.query(Users).filter_by(username='u3').first()
+    with client.session_transaction() as sess:
+        sess['user_id'] = user.id
 
-    user = session.query(Users).filter_by(username="u3").first()
-    self.holdings.setdefault(user, {})
+    # portfolio.holdings.setdefault(user.username, {})  # 可选初始化
 
-
-
-    # Buy 2 shares of TSLA
     rv = client.post('/portfolio/buy', json={'symbol': 'TSLA', 'quantity': 2})
     assert rv.status_code == 200
 
-    # Retrieve the single holding
     rv = client.get('/portfolio/holding/TSLA')
     assert rv.status_code == 200
     data = rv.get_json()
     assert data['quantity'] == 2
     assert data['avg_price'] == 100.0
 
-    # Delete the holding
     rv = client.delete('/portfolio/holding/TSLA')
     assert rv.status_code == 200
 
-    # Confirm that the holding is gone
     rv = client.get('/portfolio/holding/TSLA')
     assert rv.status_code == 404
-
 
 def test_clear_portfolio(client, monkeypatch):
     """
@@ -107,9 +98,13 @@ def test_clear_portfolio(client, monkeypatch):
     # Register and log in a new user
     client.post('/create-account', json={'username': 'u4', 'password': 'pwd'})
     client.post('/login', json={'username': 'u4', 'password': 'pwd'})
+    with client.session_transaction() as sess:
+        sess['user_id'] = 'u4'
 
     # Manually simulate login by setting session
     client.post('/login', json={'username': 'u4', 'password': 'pwd'})
+    with client.session_transaction() as sess:
+        sess['user_id'] = 'u4'
   
 
     # Buy 1 share of GOOG

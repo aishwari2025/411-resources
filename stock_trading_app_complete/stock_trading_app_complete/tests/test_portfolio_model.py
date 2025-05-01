@@ -1,4 +1,4 @@
-from portfolio_model import portfolio
+from models.portfolio_model import portfolio
 
 def test_buy_stock():
     portfolio.clear("user1")

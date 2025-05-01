@@ -83,3 +83,4 @@ class portfolio:
         self.holdings[username] = {}
 
 portfolio_model = portfolio()
+portfolio = portfolio()
