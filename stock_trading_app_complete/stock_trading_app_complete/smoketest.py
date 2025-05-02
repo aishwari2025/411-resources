@@ -31,14 +31,14 @@ def run_smoke_tests():
 
     client = app.test_client()
 
-    print("\n🧪 Running smoke tests...\n")
+    print("\nRunning smoke tests...\n")
 
     # 1. Healthcheck
     rv = client.get("/healthcheck")
     assert rv.status_code == 200, f"/healthcheck returned {rv.status_code}"
     data = rv.get_json()
     assert data is not None, "/healthcheck did not return JSON"
-    print("✔️ /healthcheck ok")
+    print("healthcheck ok")
 
     # 2. Create account
     rv = client.post(
@@ -46,7 +46,7 @@ def run_smoke_tests():
         json={"username": "smoketest", "password": "pass1234"}
     )
     assert rv.status_code == 200, f"/create-account {rv.status_code}"
-    print("✔️ /create-account ok")
+    print("create-account ok")
 
     # 3. Login
     rv = client.post(
@@ -54,7 +54,7 @@ def run_smoke_tests():
         json={"username": "smoketest", "password": "pass1234"}
     )
     assert rv.status_code == 200, f"/login {rv.status_code}"
-    print("✔️ /login ok")
+    print("login ok")
 
     # 4. Portfolio trading endpoints
     rv = client.post(
@@ -62,18 +62,18 @@ def run_smoke_tests():
         json={"symbol": "AAPL", "quantity": 1}
     )
     assert rv.status_code == 200, f"/portfolio/buy returned {rv.status_code}"
-    print("✔️ /portfolio/buy ok")
+    print("portfolio/buy ok")
 
     rv = client.post(
         "/portfolio/sell",
         json={"symbol": "AAPL", "quantity": 1}
     )
     assert rv.status_code == 200, f"/portfolio/sell returned {rv.status_code}"
-    print("✔️ /portfolio/sell ok")
+    print("portfolio/sell ok")
 
     rv = client.get("/portfolio")
     assert rv.status_code == 200, f"/portfolio {rv.status_code}"
-    print("✔️ /portfolio ok")
+    print("portfolio ok")
 
     # 5. Stock lookup
     rv = client.get(
@@ -81,12 +81,12 @@ def run_smoke_tests():
         query_string={"symbol": "AAPL"}
     )
     assert rv.status_code == 200, f"/stock/lookup returned {rv.status_code}"
-    print("✔️ /stock/lookup ok")
+    print("stock/lookup ok")
 
     # 6. Portfolio total value
     rv = client.get("/portfolio/value")
     assert rv.status_code == 200, f"/portfolio/value returned {rv.status_code}"
-    print("✔️ /portfolio/value ok")
+    print("portfolio/value ok")
 
     # 7. Update password
     rv = client.put(
@@ -94,20 +94,20 @@ def run_smoke_tests():
         json={"old_password": "pass1234", "new_password": "newpass5678"}
     )
     assert rv.status_code == 200, f"/update-password {rv.status_code}"
-    print("✔️ /update-password ok")
+    print("update-password ok")
 
     # 8. Logout
     rv = client.post("/logout")
     assert rv.status_code == 200, f"/logout {rv.status_code}"
-    print("✔️ /logout ok")
+    print("logout ok")
 
-    print("\n🎉 All smoke tests passed!\n")
+    print("\nAll smoke tests passed!\n")
 
 
 if __name__ == "__main__":
     try:
         run_smoke_tests()
     except AssertionError as e:
-        print(f"\n❌ Smoke test failed: {e}\n")
+        print(f"\nSmoke test failed: {e}\n")
         sys.exit(1)
     sys.exit(0)
