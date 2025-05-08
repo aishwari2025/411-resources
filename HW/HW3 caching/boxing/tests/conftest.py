@@ -1,8 +1,18 @@
-import pytest
+import sys
+import os
+sys.path.insert(0, r"C:\Users\23005\411-resources\HW\HW3 caching")
 
-from app import create_app
-from config import TestConfig
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+
+import pytest
+from boxing.app import create_app
+from boxing.config import TestConfig
 from boxing.db import db
+           
 
 @pytest.fixture
 def app():

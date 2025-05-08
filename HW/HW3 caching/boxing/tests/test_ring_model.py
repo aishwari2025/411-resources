@@ -2,8 +2,8 @@ import time
 
 import pytest
 
-from boxing.models.ring_model import RingModel
-from boxing.models.boxers_model import Boxers
+from boxing.boxing.models.ring_model import RingModel
+from boxing.boxing.models.boxers_model import Boxers
 
 
 @pytest.fixture

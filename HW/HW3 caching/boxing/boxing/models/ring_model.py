@@ -4,9 +4,9 @@ import os
 import time
 from typing import List
 
-from boxing.models.boxers_model import Boxers
-from boxing.utils.logger import configure_logger
-from boxing.utils.api_utils import get_random
+from boxing.boxing.models.boxers_model import Boxers
+from boxing.boxing.utils.logger import configure_logger
+from boxing.boxing.utils.api_utils import get_random
 
 
 logger = logging.getLogger(__name__)
@@ -31,9 +31,30 @@ class RingModel:
             ttl_seconds (int): The time-to-live in seconds for the cached boxer objects.
 
         """
-        pass
+        self.ring: List[int] = []
+        self._boxer_cache: dict[int, Boxers] = {}
+        self._ttl: dict[int, float] = {}
+        self.ttl_seconds = int(os.getenv("TTL_SECONDS", 60))
 
-    def fight(self) -> str:
+    def _get_boxer_from_cache_or_db(self, boxer_id: int) -> Boxers:
+        """Get a boxer from cache or load from database if TTL expired"""
+        now = time.time()
+        if (
+            boxer_id in self._boxer_cache
+            and boxer_id in self._ttl
+            and self._ttl[boxer_id] > now
+        ):
+            logger.debug(f"Boxer {boxer_id} retrieved from cache")
+            return self._boxer_cache[boxer_id]
+
+        logger.info(f"Loading boxer {boxer_id} from database")
+        boxer = Boxers.get_boxer_by_id(boxer_id)
+        if boxer:
+            self._boxer_cache[boxer_id] = boxer
+            self._ttl[boxer_id] = now + self.ttl_seconds
+        return boxer
+
+    def fight(self) -> List[Boxers]:
         """Simulates a fight between two combatants.
 
         Simulates a fight between two combatants. Computes their fighting skill levels,
@@ -50,7 +71,12 @@ class RingModel:
             logger.error("There must be two boxers to start a fight.")
             raise ValueError("There must be two boxers to start a fight.")
 
-        boxer_1, boxer_2 = self.get_boxers()
+        boxer1_id = self.ring.pop(0)
+        boxer2_id = self.ring.pop(0)
+
+        boxer_1 = self._get_boxer_from_cache_or_db(boxer1_id)
+        boxer_2 = self._get_boxer_from_cache_or_db(boxer2_id)
+
 
         logger.info(f"Fight started between {boxer_1.name} and {boxer_2.name}")
 
@@ -86,7 +112,8 @@ class RingModel:
 
         self.clear_ring()
 
-        return winner.name
+        return [winner, loser]
+
 
     def clear_ring(self):
         """Clears the list of boxers.
@@ -112,6 +139,7 @@ class RingModel:
         """
         if len(self.ring) >= 2:
             logger.error(f"Attempted to add boxer ID {boxer_id} but the ring is full")
+            raise ValueError("The ring already has two boxers.")
 
         try:
             boxer = Boxers.get_boxer_by_id(boxer_id)
@@ -119,7 +147,11 @@ class RingModel:
             logger.error(str(e))
             raise
 
-        logger.info(f"Adding boxer '{boxer.name}' (ID {boxer_id}) to the ring")
+        if boxer_id not in self.ring:
+            self.ring.append(boxer_id)
+            logger.info(f"Added boxer '{boxer.name}' (ID {boxer_id}) to the ring")
+        else:
+            logger.warning(f"Boxer ID {boxer_id} is already in the ring")
 
         logger.info(f"Current boxers in the ring: {[Boxers.get_boxer_by_id(b).name for b in self.ring]}")
 
@@ -131,18 +163,26 @@ class RingModel:
             List[Boxers]: A list of Boxers dataclass instances representing the boxers in the ring.
 
         """
+        now = time.time()
+        boxers = []
+
         if not self.ring:
             logger.warning("Retrieving boxers from an empty ring.")
         else:
             logger.info(f"Retrieving {len(self.ring)} boxers from the ring.")
 
         for boxer_id in self.ring:
-            if expired:
+            if boxer_id not in self._ttl or self._ttl[boxer_id] <= now:
                 logger.info(f"TTL expired or missing for boxer {boxer_id}. Refreshing from DB.")
             else:
                 logger.debug(f"Using cached boxer {boxer_id} (TTL valid).")
 
+            boxer = self._get_boxer_from_cache_or_db(boxer_id)
+            if boxer:
+                boxers.append(boxer)
+
         logger.info(f"Retrieved {len(boxers)} boxers from the ring.")
+        return boxers
 
     def get_fighting_skill(self, boxer: Boxers) -> float:
         """Calculates the fighting skill for a boxer based on arbitrary rules.
